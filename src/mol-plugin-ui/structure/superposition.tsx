@@ -30,8 +30,8 @@ import { ToggleSelectionModeButton } from './selection';
 export class StructureSuperpositionControls extends CollapsableControls {
     defaultState() {
         return {
-            isCollapsed: false,
-            header: 'Superposition',
+            isCollapsed: true,
+            header: '',
             brand: { accent: 'gray' as const, svg: SuperpositionSvg },
             isHidden: true
         };

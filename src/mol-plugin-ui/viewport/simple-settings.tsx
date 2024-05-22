@@ -55,7 +55,7 @@ const SimpleSettingsParams = {
     animate: Canvas3DParams.trackball.params.animate,
     camera: Canvas3DParams.camera,
     background: PD.Group({
-        color: PD.Color(Color(0xFCFBF9), { label: 'Background', description: 'Custom background color' }),
+        color: PD.Color(Color(0x000000), { label: 'Background', description: 'Custom background color' }),
         transparent: PD.Boolean(false),
         style: Canvas3DParams.postprocessing.params.background,
     }, { pivot: 'color' }),

@@ -26,7 +26,7 @@ export class GeometryExporterUI extends CollapsableControls<{}, State> {
 
     protected defaultState(): State & CollapsableState {
         return {
-            header: 'Export Geometry',
+            header: '',
             isCollapsed: true,
             brand: { accent: 'cyan', svg: CubeSendSvg }
         };

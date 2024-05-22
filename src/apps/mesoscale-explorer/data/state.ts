@@ -599,7 +599,7 @@ export async function updateColors(plugin: PluginContext, values: PD.Values, tag
 export function expandAllGroups(plugin: PluginContext) {
     for (const g of getAllGroups(plugin)) {
         if (g.state.isCollapsed) {
-            plugin.state.data.updateCellState(g.transform.ref, { isCollapsed: false });
+            plugin.state.data.updateCellState(g.transform.ref, { isCollapsed: true });
         }
     }
 };

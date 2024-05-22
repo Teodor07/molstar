@@ -17,7 +17,7 @@ import { exportHierarchy } from './export';
 export class ModelExportUI extends CollapsableControls<{}, {}> {
     protected defaultState(): CollapsableState {
         return {
-            header: 'Export Models',
+            header: '',
             isCollapsed: true,
             brand: { accent: 'cyan', svg: GetAppSvg }
         };

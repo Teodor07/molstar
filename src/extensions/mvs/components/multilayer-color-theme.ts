@@ -25,7 +25,7 @@ function isValidColor(color: Color): boolean {
     return color >= 0;
 }
 
-const DefaultBackgroundColor = ColorNames.white;
+const DefaultBackgroundColor = ColorNames.black;
 
 /** Parameter definition for color theme "Multilayer" */
 export function makeMultilayerColorThemeParams(colorThemeRegistry: ColorTheme.Registry, ctx: ThemeDataContext) {

@@ -26,8 +26,8 @@ interface StructureSourceControlState extends CollapsableState {
 export class StructureSourceControls extends CollapsableControls<{}, StructureSourceControlState> {
     protected defaultState(): StructureSourceControlState {
         return {
-            header: 'Structure',
-            isCollapsed: false,
+            header: '',
+            isCollapsed: true,
             isBusy: false,
             brand: { accent: 'purple', svg: MoleculeSvg }
         };

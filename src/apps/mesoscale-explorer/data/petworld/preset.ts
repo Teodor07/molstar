@@ -97,7 +97,7 @@ export async function createPetworldHierarchy(plugin: PluginContext, trajectory:
 
     const group = await state.build()
         .toRoot()
-        .applyOrUpdateTagged('group:ent:', MesoscaleGroup, { ...groupParams, root: true, index: -1, tag: `ent:`, label: 'entity', color: { type: 'generate', value: ColorNames.white, variability: 20, shift: 0, lightness: 0, alpha: 1, emissive: 0 } }, { tags: 'group:ent:', state: { isCollapsed: false, isHidden: groupParams.hidden } })
+        .applyOrUpdateTagged('group:ent:', MesoscaleGroup, { ...groupParams, root: true, index: -1, tag: `ent:`, label: 'entity', color: { type: 'generate', value: ColorNames.white, variability: 20, shift: 0, lightness: 0, alpha: 1, emissive: 0 } }, { tags: 'group:ent:', state: { isCollapsed: true, isHidden: groupParams.hidden } })
         .commit({ revertOnError: true });
 
     await state.build()

@@ -56,7 +56,7 @@
 
 .msp-transform-update-wrapper, .msp-transform-update-wrapper-collapsed {
     > .msp-transform-header > button {
-        text-align: left;
+        text-align: center;
         padding-left: $row-height;
         line-height: 24px;
         background: color-lower-contrast($control-background, 4%); // $control-background; // color-lower-contrast($default-background, 4%);
@@ -65,7 +65,7 @@
 }
 
 .msp-transform-wrapper > .msp-transform-header > button {
-    text-align: left;
+    text-align: center;
     background: $default-background; // color-lower-contrast($default-background, 4%);
     font-weight: bold;
     padding-right: 5px;
@@ -73,6 +73,8 @@
 
 .msp-transform-header {
     position: relative;
+    width: min-content;
+    margin-inline-start: auto;
     // border-top: 1px solid $entity-color-Behaviour; // TODO: separate color
 
     // > button {

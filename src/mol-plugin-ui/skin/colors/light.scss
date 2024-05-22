@@ -4,13 +4,13 @@
     @return rgb(255 - red($color), 255 - green($color), 255 - blue($color));
 }
 
-$default-background:         compl(#111318);
-$font-color:                 compl(#ccd4e0);
-$hover-font-color:           compl(#51A2FB);
-$entity-current-font-color:  compl(#68BEFD);
-$msp-btn-commit-on-font-color:   compl(#68BEFD);
-$entity-badge-font-color:    lighten(#ccd4e0,10%);
-$msp-btn-remove-background:      #DE0A28;
+$default-background:         #0B0B20;
+$font-color:                 #B169A2;
+$hover-font-color:           #68BEFD;
+$entity-current-font-color:  #68BEFD;
+$msp-btn-commit-on-font-color:   #68BEFD;
+$entity-badge-font-color:    #B169A2;
+$msp-btn-remove-background:      #FEF250;
 $msp-btn-remove-hover-font-color:#F2F4F7;
 
 // used in LOG

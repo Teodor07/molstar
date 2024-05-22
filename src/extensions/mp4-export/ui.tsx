@@ -27,7 +27,7 @@ export class Mp4EncoderUI extends CollapsableControls<{}, State> {
 
     protected defaultState(): State & CollapsableState {
         return {
-            header: 'Export Animation',
+            header: '',
             isCollapsed: true,
             brand: { accent: 'cyan', svg: SubscriptionsOutlinedSvg }
         };

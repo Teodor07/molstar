@@ -37,7 +37,7 @@ export class VolumeStreamingControls extends CollapsableControls<{}, VolumeStrea
     protected defaultState(): VolumeStreamingControlState {
         return {
             header: 'Volume Streaming',
-            isCollapsed: false,
+            isCollapsed: true,
             isBusy: false,
             isHidden: true,
             brand: { accent: 'cyan', svg: BlurOnSvg }
@@ -118,8 +118,8 @@ interface VolumeSourceControlState extends CollapsableState {
 export class VolumeSourceControls extends CollapsableControls<{}, VolumeSourceControlState> {
     protected defaultState(): VolumeSourceControlState {
         return {
-            header: 'Volume',
-            isCollapsed: false,
+            header: '',
+            isCollapsed: true,
             isBusy: false,
             isHidden: true,
             brand: { accent: 'purple', svg: BlurOnSvg }

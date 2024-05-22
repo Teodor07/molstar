@@ -28,8 +28,8 @@ interface StructureComponentControlState extends CollapsableState {
 export class StructureComponentControls extends CollapsableControls<{}, StructureComponentControlState> {
     protected defaultState(): StructureComponentControlState {
         return {
-            header: 'Components',
-            isCollapsed: false,
+            header: '',
+            isCollapsed: true,
             isDisabled: false,
             brand: { accent: 'blue', svg: CubeOutlineSvg }
         };

@@ -17,8 +17,8 @@ import { StructureComponentManager } from '../../mol-plugin-state/manager/struct
 export class StructureQuickStylesControls extends CollapsableControls {
     defaultState() {
         return {
-            isCollapsed: false,
-            header: 'Quick Styles',
+            isCollapsed: true,
+            header: '',
             brand: { accent: 'gray' as const, svg: MagicWandSvg }
         };
     }

@@ -25,7 +25,7 @@ export class AssemblySymmetryControls extends CollapsableControls<{}, AssemblySy
     protected defaultState(): AssemblySymmetryControlState {
         return {
             header: 'Assembly Symmetry',
-            isCollapsed: false,
+            isCollapsed: true,
             isBusy: false,
             isHidden: true,
             brand: { accent: 'cyan', svg: ExtensionSvg }

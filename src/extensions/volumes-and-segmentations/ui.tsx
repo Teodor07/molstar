@@ -62,7 +62,7 @@ export class VolsegUI extends CollapsableControls<{}, { data: VolsegUIData }> {
         return <VolsegControls plugin={this.plugin} data={this.state.data} setData={d => this.setState({ data: d })} />;
     }
     componentDidMount(): void {
-        this.setState({ isHidden: true, isCollapsed: false });
+        this.setState({ isHidden: true, isCollapsed: true });
         this.subscribe(this.plugin.state.data.events.changed, e => {
             const nodes = e.state.selectQ(q => q.ofType(VolsegEntry)).map(cell => cell?.obj).filter(isDefined);
             const isHidden = nodes.length === 0;

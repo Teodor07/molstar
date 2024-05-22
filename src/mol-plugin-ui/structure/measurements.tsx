@@ -33,8 +33,8 @@ import { ToggleSelectionModeButton } from './selection';
 export class StructureMeasurementsControls extends CollapsableControls {
     defaultState() {
         return {
-            isCollapsed: false,
-            header: 'Measurements',
+            isCollapsed: true,
+            header: '',
             brand: { accent: 'gray' as const, svg: PencilRulerSvg }
         };
     }

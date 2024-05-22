@@ -22,7 +22,7 @@ import { capitalize, stripTags } from '../../mol-util/string';
 import { PluginUIComponent, PurePluginUIComponent } from '../base';
 import { ActionMenu } from '../controls/action-menu';
 import { Button, ControlGroup, IconButton, ToggleButton } from '../controls/common';
-import { BrushSvg, CancelOutlinedSvg, CloseSvg, CubeOutlineSvg, HelpOutlineSvg, Icon, IntersectSvg, RemoveSvg, RestoreSvg, SelectionModeSvg, SetSvg, SubtractSvg, UnionSvg } from '../controls/icons';
+import { BrushSvg, CancelOutlinedSvg, CloseSvg, CubeOutlineSvg, HelpOutlineSvg, Icon, IntersectSvg, RemoveSvg, RestoreSvg, SelectionModeSvg, SetSvg, SubtractSvg, UnionSvg, SaveOutlinedSvg, WorkspaceSvg } from '../controls/icons';
 import { ParameterControls, ParamOnChange, PureSelectControl } from '../controls/parameters';
 import { HelpGroup, HelpText, ViewportHelpContent } from '../viewport/help';
 import { AddComponentControls } from './components';
@@ -58,8 +58,9 @@ interface StructureSelectionActionsControlsState {
     isBusy: boolean,
     canUndo: boolean,
 
-    action?: StructureSelectionModifier | 'theme' | 'add-component' | 'help',
+    action?: StructureSelectionModifier | 'theme' | 'add-component' | 'help' | 'load',
     helper?: SelectionHelperType,
+    savedSelections: StructureComponentRef[][];
 }
 
 const ActionHeader = new Map<StructureSelectionModifier, string>([
@@ -77,6 +78,8 @@ export class StructureSelectionActionsControls extends PluginUIComponent<{}, Str
         isEmpty: true,
         isBusy: false,
         canUndo: false,
+
+        savedSelections: [] as StructureComponentRef[][],
     };
 
     componentDidMount() {
@@ -194,6 +197,7 @@ export class StructureSelectionActionsControls extends PluginUIComponent<{}, Str
     toggleSet = this.showAction('set');
     toggleTheme = this.showAction('theme');
     toggleAddComponent = this.showAction('add-component');
+    toggleLoad = this.showAction('load');
     toggleHelp = this.showAction('help');
 
     setGranuality: ParamOnChange = ({ value }) => {
@@ -214,6 +218,22 @@ export class StructureSelectionActionsControls extends PluginUIComponent<{}, Str
         if (components.length === 0) return;
         this.plugin.managers.structure.component.modifyByCurrentSelection(components, 'subtract');
     };
+
+    save = () => {
+        const sel = this.plugin.managers.structure.hierarchy.getStructuresWithSelection();
+        const components: StructureComponentRef[] = [];
+        for (const s of sel) components.push(...s.components);
+        this.setState({ savedSelections: [...this.state.savedSelections, components] });
+    };
+
+    // load = (index: number) => {
+    //     const components = this.state.savedSelections[index];
+    //     if (!components) return;
+
+    //     for (const component of components) {
+    //          this.plugin.managers.structure.selection.add(component);
+    //     }
+    // };
 
     render() {
         const granularity = this.plugin.managers.interactivity.props.granularity;
@@ -237,6 +257,10 @@ export class StructureSelectionActionsControls extends PluginUIComponent<{}, Str
                 {this.state.action === 'add-component' && <div className='msp-selection-viewport-controls-actions'>
                     <ControlGroup header='Add Component' title='Click to close.' initialExpanded={true} hideExpander={true} hideOffset={true} onHeaderClick={this.toggleAddComponent} topRightIcon={CloseSvg}>
                         <AddComponentControls onApply={this.toggleAddComponent} forSelection />
+                    </ControlGroup>
+                </div>}
+                {this.state.action === 'load' && <div className='msp-selection-viewport-controls-actions'>
+                    <ControlGroup header='Load' title='Click to close.' initialExpanded={true} hideExpander={true} hideOffset={true} onHeaderClick={this.toggleLoad} topRightIcon={CloseSvg}>
                     </ControlGroup>
                 </div>}
                 {this.state.action === 'help' && <div className='msp-selection-viewport-controls-actions'>
@@ -272,6 +296,9 @@ export class StructureSelectionActionsControls extends PluginUIComponent<{}, Str
                 <ToggleButton icon={CubeOutlineSvg} title='Create Component of Selection with Representation' toggle={this.toggleAddComponent} isSelected={this.state.action === 'add-component'} disabled={this.isDisabled} />
                 <IconButton svg={RemoveSvg} title='Remove/subtract Selection from all Components' onClick={this.subtract} disabled={this.isDisabled} />
                 <IconButton svg={RestoreSvg} onClick={this.undo} disabled={!this.state.canUndo || this.isDisabled} title={undoTitle} />
+
+                <IconButton svg={SaveOutlinedSvg} title='Save the currently selected group' onClick={this.save} disabled={this.isDisabled} style={{ marginLeft: '10px' }}/>
+                <ToggleButton icon={WorkspaceSvg} title='Load a saved group' toggle={this.toggleLoad} isSelected={this.state.action === 'load'} disabled={this.isDisabled} />
 
                 <ToggleButton icon={HelpOutlineSvg} title='Show/hide help' toggle={this.toggleHelp} style={{ marginLeft: '10px' }} isSelected={this.state.action === 'help'} />
                 {this.plugin.config.get(PluginConfig.Viewport.ShowSelectionMode) && (<IconButton svg={CancelOutlinedSvg} title='Turn selection mode off' onClick={this.turnOff} />)}
