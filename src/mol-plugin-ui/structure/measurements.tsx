@@ -159,12 +159,12 @@ export class MeasurementControls extends PurePluginUIComponent<{}, { isBusy: boo
     get actions(): ActionMenu.Items {
         const history = this.selection.additionsHistory;
         const ret: ActionMenu.Item[] = [
-            { kind: 'item', label: `Label ${history.length === 0 ? ' (1 selection item required)' : ' (1st selection item)'}`, value: this.addLabel, disabled: history.length === 0 },
-            { kind: 'item', label: `Distance ${history.length < 2 ? ' (2 selection items required)' : ' (top 2 selection items)'}`, value: this.measureDistance, disabled: history.length < 2 },
-            { kind: 'item', label: `Angle ${history.length < 3 ? ' (3 selection items required)' : ' (top 3 items)'}`, value: this.measureAngle, disabled: history.length < 3 },
-            { kind: 'item', label: `Dihedral ${history.length < 4 ? ' (4 selection items required)' : ' (top 4 selection items)'}`, value: this.measureDihedral, disabled: history.length < 4 },
-            { kind: 'item', label: `Orientation ${history.length === 0 ? ' (selection required)' : ' (current selection)'}`, value: this.addOrientation, disabled: history.length === 0 },
-            { kind: 'item', label: `Plane ${history.length === 0 ? ' (selection required)' : ' (current selection)'}`, value: this.addPlane, disabled: history.length === 0 },
+            { kind: 'item', label: `Label ${history.length === 0 ? ' (1 selection)' : ' (1st selection item)'}`, value: this.addLabel, disabled: history.length === 0 },
+            { kind: 'item', label: `Distance ${history.length < 2 ? ' (2 selection)' : ' (top 2 selection items)'}`, value: this.measureDistance, disabled: history.length < 2 },
+            { kind: 'item', label: `Angle ${history.length < 3 ? ' (3 selection)' : ' (top 3 items)'}`, value: this.measureAngle, disabled: history.length < 3 },
+            { kind: 'item', label: `Dihedral ${history.length < 4 ? ' (4 selection)' : ' (top 4 selection items)'}`, value: this.measureDihedral, disabled: history.length < 4 },
+            { kind: 'item', label: `Orientation ${history.length === 0 ? ' (selection)' : ' (current selection)'}`, value: this.addOrientation, disabled: history.length === 0 },
+            { kind: 'item', label: `Plane ${history.length === 0 ? ' (selection)' : ' (current selection)'}`, value: this.addPlane, disabled: history.length === 0 },
         ];
         return ret;
     }
@@ -357,7 +357,7 @@ class MeasurementEntry extends PurePluginUIComponent<{ cell: StructureMeasuremen
         if (!obj) return null;
 
         return <>
-            <div className='msp-flex-row' key={obj.id} onMouseEnter={this.highlight} onMouseLeave={this.clearHighlight}>
+            <div className='msp-flex-column' key={obj.id} onMouseEnter={this.highlight} onMouseLeave={this.clearHighlight}>
                 <button className='msp-form-control msp-control-button-label msp-no-overflow' title='Click to focus. Hover to highlight.' onClick={this.focus} style={{ width: 'auto', textAlign: 'left' }}>
                     <span dangerouslySetInnerHTML={{ __html: this.label }} />
                 </button>

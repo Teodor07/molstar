@@ -19,13 +19,14 @@ import { IconButton } from './controls/common';
 import { Icon, NavigateBeforeSvg, NavigateNextSvg, SkipPreviousSvg, StopSvg, PlayArrowSvg, SubscriptionsOutlinedSvg, BuildSvg } from './controls/icons';
 import { AnimationControls } from './state/animation';
 import { StructureComponentControls } from './structure/components';
-import { StructureMeasurementsControls } from './structure/measurements';
+// import { StructureMeasurementsControls } from './structure/measurements';
 import { StructureSelectionActionsControls } from './structure/selection';
 import { StructureSourceControls } from './structure/source';
 import { VolumeStreamingControls, VolumeSourceControls } from './structure/volume';
 import { PluginConfig } from '../mol-plugin/config';
 import { StructureSuperpositionControls } from './structure/superposition';
 import { StructureQuickStylesControls } from './structure/quick-styles';
+import { StructureMeasurementsControls } from './structure/measurements';
 
 export class TrajectoryViewportControls extends PluginUIComponent<{}, { show: boolean, label: string }> {
     state = { show: false, label: '' };
@@ -268,6 +269,8 @@ export class AnimationViewportControls extends PluginUIComponent<{}, { isEmpty: 
             {(this.state.isExpanded && !this.state.isBusy) && <div className='msp-animation-viewport-controls-select'>
                 <AnimationControls onStart={this.toggleExpanded} />
             </div>}
+            <div style={{ marginTop: '200px' }}></div>
+            <StructureMeasurementsControls />
         </div>;
     }
 }
@@ -331,14 +334,11 @@ export class DefaultStructureTools extends PluginUIComponent {
             <div className='msp-section-header'><Icon svg={BuildSvg} />Structure Tools</div>
 
             <StructureSourceControls />
-            <StructureMeasurementsControls />
             <StructureSuperpositionControls />
             <StructureQuickStylesControls />
             <StructureComponentControls />
             {this.plugin.config.get(PluginConfig.VolumeStreaming.Enabled) && <VolumeStreamingControls />}
             <VolumeSourceControls />
-
-            <CustomStructureControls />
         </>;
     }
 }

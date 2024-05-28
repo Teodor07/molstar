@@ -120,14 +120,14 @@ export class QuickStyles extends PurePluginUIComponent {
     }
 
     render() {
-        return <div className='msp-flex-row'>
-            <Button noOverflow title='Applies default representation preset. Set outline and occlusion effects to defaults.' onClick={() => this.default()} style={{ width: 'auto' }}>
+        return <div className='msp-flex-column'>
+            <Button noOverflow title='Applies default representation preset. Set outline and occlusion effects to defaults.' onClick={() => this.default()}>
                 Default
             </Button>
-            <Button noOverflow title='Applies no representation preset. Enables outline and occlusion effects. Enables ignore-light representation parameter.' onClick={() => this.stylized()} style={{ width: 'auto' }}>
+            <Button noOverflow title='Applies no representation preset. Enables outline and occlusion effects. Enables ignore-light representation parameter.' onClick={() => this.stylized()}>
                 Stylized
             </Button>
-            <Button noOverflow title='Applies illustrative representation preset. Enables outline and occlusion effects. Enables ignore-light parameter.' onClick={() => this.illustrative()} style={{ width: 'auto' }}>
+            <Button noOverflow title='Applies illustrative representation preset. Enables outline and occlusion effects. Enables ignore-light parameter.' onClick={() => this.illustrative()}>
                 Illustrative
             </Button>
         </div>;

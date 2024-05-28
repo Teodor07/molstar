@@ -121,7 +121,7 @@ class ComponentEditorControls extends PurePluginUIComponent<{}, ComponentEditorC
             ? `Undo ${this.plugin.state.data.latestUndoLabel}`
             : 'Some mistakes of the past can be undone.';
         return <>
-            <div className='msp-flex-row'>
+            <div className='msp-flex-column'>
                 <ToggleButton icon={BookmarksOutlinedSvg} label='Preset' title='Apply a representation preset for the current structure(s).' toggle={this.togglePreset} isSelected={this.state.action === 'preset'} disabled={this.isDisabled} />
                 <ToggleButton icon={AddSvg} label='Add' title='Add a new representation component for a selection.' toggle={this.toggleAdd} isSelected={this.state.action === 'add'} disabled={this.isDisabled} />
                 <ToggleButton icon={TuneSvg} label='' title='Options that are applied to all applicable representations.' style={{ flex: '0 0 40px', padding: 0 }} toggle={this.toggleOptions} isSelected={this.state.action === 'options'} disabled={this.isDisabled} />
@@ -336,7 +336,7 @@ class StructureComponentGroup extends PurePluginUIComponent<{ group: StructureCo
         const label = cell.obj?.label;
         const reprLabel = this.reprLabel;
         return <>
-            <div className='msp-flex-row'>
+            <div className='msp-flex-column'>
                 <Button noOverflow className='msp-control-button-label' title={`${label}. Click to focus.`} onClick={this.focus} onMouseEnter={this.highlight} onMouseLeave={this.clearHighlight} style={{ textAlign: 'left' }}>
                     {label}
                     <small className='msp-25-lower-contrast-text' style={{ float: 'right' }}>{reprLabel}</small>

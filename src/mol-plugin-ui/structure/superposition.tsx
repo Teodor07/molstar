@@ -244,7 +244,7 @@ export class SuperpositionControls extends PurePluginUIComponent<{ }, Superposit
     }
 
     lociEntry(e: LociEntry, idx: number) {
-        return <div className='msp-flex-row' key={idx}>
+        return <div className='msp-flex-column' key={idx}>
             <Button noOverflow title='Click to focus. Hover to highlight.' onClick={() => this.focusLoci(e.loci)} style={{ width: 'auto', textAlign: 'left' }} onMouseEnter={() => this.highlight(e.loci)} onMouseLeave={() => this.plugin.managers.interactivity.lociHighlights.clearHighlights()}>
                 <span dangerouslySetInnerHTML={{ __html: e.label }} />
             </Button>
@@ -253,7 +253,7 @@ export class SuperpositionControls extends PurePluginUIComponent<{ }, Superposit
 
     historyEntry(e: StructureSelectionHistoryEntry, idx: number) {
         const history = this.plugin.managers.structure.selection.additionsHistory;
-        return <div className='msp-flex-row' key={e.id}>
+        return <div className='msp-flex-column' key={e.id}>
             <Button noOverflow title='Click to focus. Hover to highlight.' onClick={() => this.focusLoci(e.loci)} style={{ width: 'auto', textAlign: 'left' }} onMouseEnter={() => this.highlight(e.loci)} onMouseLeave={() => this.plugin.managers.interactivity.lociHighlights.clearHighlights()}>
                 {idx}. <span dangerouslySetInnerHTML={{ __html: e.label }} />
             </Button>
@@ -376,8 +376,8 @@ export class SuperpositionControls extends PurePluginUIComponent<{ }, Superposit
     render() {
         return <>
             <div className='msp-flex-row'>
-                <ToggleButton icon={SuperposeChainsSvg} label='Chains' toggle={this.toggleByChains} isSelected={this.state.action === 'byChains'} disabled={this.state.isBusy} />
-                <ToggleButton icon={SuperposeAtomsSvg} label='Atoms' toggle={this.toggleByAtoms} isSelected={this.state.action === 'byAtoms'} disabled={this.state.isBusy} />
+                <ToggleButton icon={SuperposeChainsSvg} label='' toggle={this.toggleByChains} isSelected={this.state.action === 'byChains'} disabled={this.state.isBusy} />
+                <ToggleButton icon={SuperposeAtomsSvg} label='' toggle={this.toggleByAtoms} isSelected={this.state.action === 'byAtoms'} disabled={this.state.isBusy} />
                 {this.state.canUseDb && this.superposeByDbMapping()}
                 <ToggleButton icon={TuneSvg} label='' title='Options' toggle={this.toggleOptions} isSelected={this.state.action === 'options'} disabled={this.state.isBusy} style={{ flex: '0 0 40px', padding: 0 }} />
             </div>

@@ -154,8 +154,8 @@ export class Sequence<P extends SequenceProps> extends PluginUIComponent<P> {
         return marker === 0
             ? ''
             : marker % 2 === 0
-                ? 'rgb(51, 255, 25)' // selected
-                : 'rgb(255, 102, 153)'; // highlighted
+                ? 'rgb(15, 55, 50)' // selected
+                : 'rgb(255, 255, 255)'; // highlighted
     }
 
     protected getResidueClass(seqIdx: number, label: string) {

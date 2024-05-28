@@ -96,7 +96,7 @@ const DefaultViewerOptions = {
     layoutShowLog: true,
     layoutShowLeftPanel: true,
     collapseLeftPanel: true,
-    collapseRightPanel: false,
+    collapseRightPanel: true,
     disableAntialiasing: PluginConfig.General.DisableAntialiasing.defaultValue,
     pixelScale: PluginConfig.General.PixelScale.defaultValue,
     pickScale: PluginConfig.General.PickScale.defaultValue,

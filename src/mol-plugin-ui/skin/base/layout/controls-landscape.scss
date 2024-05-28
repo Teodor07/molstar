@@ -2,7 +2,7 @@
 .msp-layout-main {                
     position: absolute;
     left: calc($expanded-left-width*0.75);
-    right: calc($expanded-right-width / 2);
+    right: calc($expanded-right-width * 0.8);
     bottom: $expanded-bottom-height;
     top: $expanded-top-height;
 }
@@ -10,7 +10,7 @@
 .msp-layout-top {        
     position: absolute;
     left: calc($expanded-left-width*0.75);
-    right: calc($expanded-right-width / 2);
+    right:calc($expanded-right-width * 0.8);
     height: $expanded-top-height;
     top: 0;
     border-bottom: 1px solid $border-color;
@@ -19,7 +19,7 @@
 .msp-layout-bottom {        
     position: absolute;
     left: calc($expanded-left-width*0.75);
-    right: calc($expanded-right-width / 2);
+    right: calc($expanded-right-width * 0.8);
     height: $expanded-bottom-height;
     bottom: 0;
     border-top: 1px solid $border-color;
@@ -27,7 +27,7 @@
 
 .msp-layout-right {
     position: absolute;
-    width: calc($expanded-right-width / 2);
+    width: calc($expanded-right-width * 0.8);
     right: 0;
     bottom: 0;
     top: 0;
