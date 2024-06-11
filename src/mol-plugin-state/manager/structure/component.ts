@@ -203,13 +203,16 @@ class StructureComponentManager extends StatefulPluginComponent<StructureCompone
     modifyByCurrentSelection(components: ReadonlyArray<StructureComponentRef>, action: StructureComponentManager.ModifyAction) {
         return this.plugin.runTask(Task.create('Modify Component', async taskCtx => {
             const b = this.dataState.build();
+            // let elementCount = 0;
             for (const c of components) {
                 if (!this.canBeModified(c)) continue;
 
                 const selection = this.plugin.managers.structure.selection.getStructure(c.structure.cell.obj!.data);
                 if (!selection || selection.elementCount === 0) continue;
+                // elementCount += selection.elementCount;
                 this.modifyComponent(b, c, selection, action);
             }
+            // console.log(`Modifying ${elementCount} elements`);
             await this.dataState.updateTree(b, { canUndo: 'Modify Selection' }).runInContext(taskCtx);
         }));
     }

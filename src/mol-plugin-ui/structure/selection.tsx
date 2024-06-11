@@ -27,7 +27,6 @@ import { ParameterControls, ParamOnChange, PureSelectControl } from '../controls
 import { HelpGroup, HelpText, ViewportHelpContent } from '../viewport/help';
 import { AddComponentControls } from './components';
 
-
 export class ToggleSelectionModeButton extends PurePluginUIComponent<{ inline?: boolean }> {
     componentDidMount() {
         this.subscribe(this.plugin.events.canvas3d.settingsUpdated, () => this.forceUpdate());
@@ -60,7 +59,9 @@ interface StructureSelectionActionsControlsState {
 
     action?: StructureSelectionModifier | 'theme' | 'add-component' | 'help' | 'load',
     helper?: SelectionHelperType,
-    savedSelections: StructureComponentRef[][];
+    savedSelections: StructureRef[][];
+    buttonNames: string[]; // Add this line to store button names
+
 }
 
 const ActionHeader = new Map<StructureSelectionModifier, string>([
@@ -79,7 +80,8 @@ export class StructureSelectionActionsControls extends PluginUIComponent<{}, Str
         isBusy: false,
         canUndo: false,
 
-        savedSelections: [] as StructureComponentRef[][],
+        savedSelections: [] as StructureRef[][],
+        buttonNames: [] as string[],
     };
 
     componentDidMount() {
@@ -104,6 +106,8 @@ export class StructureSelectionActionsControls extends PluginUIComponent<{}, Str
         this.subscribe(this.plugin.state.data.events.historyUpdated, ({ state }) => {
             this.setState({ canUndo: state.canUndo });
         });
+        const initialButtonNames = this.state.savedSelections.map((_, index) => `Save ${index + 1}`);
+        this.setState({ buttonNames: initialButtonNames });
     }
 
     get isDisabled() {
@@ -197,7 +201,9 @@ export class StructureSelectionActionsControls extends PluginUIComponent<{}, Str
     toggleSet = this.showAction('set');
     toggleTheme = this.showAction('theme');
     toggleAddComponent = this.showAction('add-component');
-    toggleLoad = this.showAction('load');
+    toggleLoad = () => {
+        this.setState({ action: this.state.action === 'load' ? void 0 : 'load' });
+    };
     toggleHelp = this.showAction('help');
 
     setGranuality: ParamOnChange = ({ value }) => {
@@ -221,19 +227,91 @@ export class StructureSelectionActionsControls extends PluginUIComponent<{}, Str
 
     save = () => {
         const sel = this.plugin.managers.structure.hierarchy.getStructuresWithSelection();
-        const components: StructureComponentRef[] = [];
-        for (const s of sel) components.push(...s.components);
-        this.setState({ savedSelections: [...this.state.savedSelections, components] });
+        let elementCount = 0;
+        for (const s of sel) {
+            const selection = this.plugin.managers.structure.selection.getStructure(s.cell.obj!.data);
+            if (selection && selection.elementCount > 0) {
+                elementCount += selection.elementCount;
+                console.log(`Counting: now ${elementCount} elements`);
+            }
+            console.log(`This is an s`);
+        }
+        if (elementCount === 0) return;
+        this.setState(prevState => {
+            const updatedSelections = [...prevState.savedSelections, sel];
+            // Create a default name for the new button
+            const newButtonName = `Save ${prevState.savedSelections.length + 1}`;
+            const updatedButtonNames = [...prevState.buttonNames, newButtonName];
+            return {
+                savedSelections: updatedSelections,
+                buttonNames: updatedButtonNames
+            };
+        });
+        console.log(`Saving ${elementCount} elements`);
     };
 
-    // load = (index: number) => {
-    //     const components = this.state.savedSelections[index];
-    //     if (!components) return;
+    load = () => {
+        if (!this.state.savedSelections || !Array.isArray(this.state.savedSelections)) {
+            return;
+        }
 
-    //     for (const component of components) {
-    //          this.plugin.managers.structure.selection.add(component);
-    //     }
-    // };
+        this.state.savedSelections.forEach(group => {
+            if (Array.isArray(group)) {
+                const components = group.map(structure => structure.components.length + ': ' + structure.kind).join(', ');
+                console.log(components);
+            }
+        });
+    };
+
+    handleChangeButtonName = (index: number) => {
+        return () => {
+            const newName = prompt('Enter the new name for the button:', this.state.buttonNames[index]);
+            if (newName !== null) { // Check for null to handle cancel button in prompt
+                this.setState(prevState => {
+                    const newButtonNames = [...prevState.buttonNames];
+                    newButtonNames[index] = newName;
+                    return { buttonNames: newButtonNames };
+                });
+            }
+        };
+    };
+
+    handleLoad(index: number): void {
+        const savedSelections = this.state.savedSelections[index];
+        if (!savedSelections) {
+            console.error('No saved selection found at index', index);
+            return;
+        }
+
+        // Deselect any current selection
+        this.plugin.managers.structure.selection.clear();
+        this.plugin.managers.structure.selection.dispose();
+        this.plugin.managers.structure.hierarchy.dispose();
+
+
+        // Apply each saved selection
+        savedSelections.forEach(structureRef => {
+            const structure = structureRef.cell.obj?.data;
+            if (structure) {
+                // Retrieve the loci for the structure
+                const loci = this.plugin.managers.structure.selection.getLoci(structure);
+                if (loci.kind !== 'empty-loci') {
+                    // Use the 'add' modifier to add the loci to the current selection
+                    this.plugin.managers.structure.selection.modify('set', loci);
+                } else {
+                    console.error('No selection found for structure', structure);
+                }
+            }
+        });
+
+        // Trigger an update to ensure the selection is reflected in the UI
+        this.plugin.managers.structure.selection.events.changed.complete();
+        this.forceUpdate();
+
+        console.log(`***Loaded saved selection ${index + 1}`);
+    }
+
+
 
     render() {
         const granularity = this.plugin.managers.interactivity.props.granularity;
@@ -242,8 +320,17 @@ export class StructureSelectionActionsControls extends PluginUIComponent<{}, Str
             : 'Some mistakes of the past can be undone.';
 
         let children: React.ReactNode | undefined = void 0;
-
-        if (this.state.action && !this.state.helper) {
+        let loadButtons;
+        if (this.state.action === 'load') {
+            this.load();
+            loadButtons = this.state.savedSelections.map((_, index) => (
+                <div key={index} style={{ display: 'flex', alignItems: 'center' }}>
+                    {/* Use the name from the buttonNames array instead of the hardcoded `Save ${index + 1}` */}
+                    <Button onClick={() => this.handleLoad(index)}>{this.state.buttonNames[index]}</Button>
+                    <IconButton svg={SaveOutlinedSvg} title='Change name of group' onClick={this.handleChangeButtonName(index)} disabled={this.isDisabled} style={{ marginLeft: '5px' }} />
+                </div>
+            ));
+        } else if (this.state.action && !this.state.helper) {
             children = <>
                 {(this.state.action && this.state.action !== 'theme' && this.state.action !== 'add-component' && this.state.action !== 'help') && <div className='msp-selection-viewport-controls-actions'>
                     <ActionMenu header={ActionHeader.get(this.state.action as StructureSelectionModifier)} title='Click to close.' items={this.queries} onSelect={this.selectQuery} noOffset />
@@ -257,10 +344,6 @@ export class StructureSelectionActionsControls extends PluginUIComponent<{}, Str
                 {this.state.action === 'add-component' && <div className='msp-selection-viewport-controls-actions'>
                     <ControlGroup header='Add Component' title='Click to close.' initialExpanded={true} hideExpander={true} hideOffset={true} onHeaderClick={this.toggleAddComponent} topRightIcon={CloseSvg}>
                         <AddComponentControls onApply={this.toggleAddComponent} forSelection />
-                    </ControlGroup>
-                </div>}
-                {this.state.action === 'load' && <div className='msp-selection-viewport-controls-actions'>
-                    <ControlGroup header='Load' title='Click to close.' initialExpanded={true} hideExpander={true} hideOffset={true} onHeaderClick={this.toggleLoad} topRightIcon={CloseSvg}>
                     </ControlGroup>
                 </div>}
                 {this.state.action === 'help' && <div className='msp-selection-viewport-controls-actions'>
@@ -297,17 +380,17 @@ export class StructureSelectionActionsControls extends PluginUIComponent<{}, Str
                 <IconButton svg={RemoveSvg} title='Remove/subtract Selection from all Components' onClick={this.subtract} disabled={this.isDisabled} />
                 <IconButton svg={RestoreSvg} onClick={this.undo} disabled={!this.state.canUndo || this.isDisabled} title={undoTitle} />
 
-                <IconButton svg={SaveOutlinedSvg} title='Save the currently selected group' onClick={this.save} disabled={this.isDisabled} style={{ marginLeft: '10px' }}/>
+                <IconButton svg={SaveOutlinedSvg} title='Save the currently selected group' onClick={this.save} disabled={this.isDisabled} style={{ marginLeft: '10px' }} />
                 <ToggleButton icon={WorkspaceSvg} title='Load a saved group' toggle={this.toggleLoad} isSelected={this.state.action === 'load'} disabled={this.isDisabled} />
 
                 <ToggleButton icon={HelpOutlineSvg} title='Show/hide help' toggle={this.toggleHelp} style={{ marginLeft: '10px' }} isSelected={this.state.action === 'help'} />
                 {this.plugin.config.get(PluginConfig.Viewport.ShowSelectionMode) && (<IconButton svg={CancelOutlinedSvg} title='Turn selection mode off' onClick={this.turnOff} />)}
             </div>
+            {loadButtons}
             {children}
         </>;
     }
 }
-
 export class StructureSelectionStatsControls extends PluginUIComponent<{ hideOnEmpty?: boolean }, { isEmpty: boolean, isBusy: boolean }> {
     state = {
         isEmpty: true,

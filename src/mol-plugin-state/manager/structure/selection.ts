@@ -144,8 +144,10 @@ export class StructureSelectionManager extends StatefulPluginComponent<Structure
         if (!StructureElement.Loci.is(loci)) return false;
 
         const entry = this.getEntry(loci.structure);
-        if (!entry) return false;
-
+        if (!entry) {
+            console.log('set - no entry for structure');
+            return false;
+        }
         const sel = entry.selection;
         entry.selection = loci;
         this.tryAddHistory(loci);
