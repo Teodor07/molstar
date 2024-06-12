@@ -26,6 +26,7 @@ import { BrushSvg, CancelOutlinedSvg, CloseSvg, CubeOutlineSvg, HelpOutlineSvg, 
 import { ParameterControls, ParamOnChange, PureSelectControl } from '../controls/parameters';
 import { HelpGroup, HelpText, ViewportHelpContent } from '../viewport/help';
 import { AddComponentControls } from './components';
+import { Loci } from '../../mol-model/loci';
 
 export class ToggleSelectionModeButton extends PurePluginUIComponent<{ inline?: boolean }> {
     componentDidMount() {
@@ -59,8 +60,8 @@ interface StructureSelectionActionsControlsState {
 
     action?: StructureSelectionModifier | 'theme' | 'add-component' | 'help' | 'load',
     helper?: SelectionHelperType,
-    savedSelections: StructureRef[][];
-    buttonNames: string[]; // Add this line to store button names
+    savedSelections: Loci[][];
+    buttonNames: string[];
 
 }
 
@@ -80,7 +81,7 @@ export class StructureSelectionActionsControls extends PluginUIComponent<{}, Str
         isBusy: false,
         canUndo: false,
 
-        savedSelections: [] as StructureRef[][],
+        savedSelections: [] as Loci[][],
         buttonNames: [] as string[],
     };
 
@@ -228,18 +229,26 @@ export class StructureSelectionActionsControls extends PluginUIComponent<{}, Str
     save = () => {
         const sel = this.plugin.managers.structure.hierarchy.getStructuresWithSelection();
         let elementCount = 0;
+        const savedLociList: (Loci | { kind: 'empty-loci'; })[] = [];
         for (const s of sel) {
-            const selection = this.plugin.managers.structure.selection.getStructure(s.cell.obj!.data);
-            if (selection && selection.elementCount > 0) {
-                elementCount += selection.elementCount;
-                console.log(`Counting: now ${elementCount} elements`);
+            const c = this.plugin.managers.structure.selection.getStructure(s.cell.obj!.data);
+            const selection = this.plugin.managers.structure.selection.getLoci(s.cell.obj!.data);
+            if (c && c.elementCount > 0) {
+                elementCount += c.elementCount;
+                // console.log(`Counting: now ${elementCount} elements`);
             }
-            console.log(`This is an s`);
+            if (selection) {
+                savedLociList.push(selection);
+            }
+            // const structure = s.cell.obj?.data;
+            // if (structure) {
+            //     const loci = this.plugin.managers.structure.selection.getLoci(structure);
+            //      console.log(`Loci for structure ${structure.label}:`, loci);
+            // }
         }
         if (elementCount === 0) return;
         this.setState(prevState => {
-            const updatedSelections = [...prevState.savedSelections, sel];
-            // Create a default name for the new button
+            const updatedSelections = [...prevState.savedSelections, savedLociList];
             const newButtonName = `Save ${prevState.savedSelections.length + 1}`;
             const updatedButtonNames = [...prevState.buttonNames, newButtonName];
             return {
@@ -247,7 +256,7 @@ export class StructureSelectionActionsControls extends PluginUIComponent<{}, Str
                 buttonNames: updatedButtonNames
             };
         });
-        console.log(`Saving ${elementCount} elements`);
+        // console.log(`Saving ${elementCount} elements`);
     };
 
     load = () => {
@@ -255,13 +264,43 @@ export class StructureSelectionActionsControls extends PluginUIComponent<{}, Str
             return;
         }
 
-        this.state.savedSelections.forEach(group => {
-            if (Array.isArray(group)) {
-                const components = group.map(structure => structure.components.length + ': ' + structure.kind).join(', ');
-                console.log(components);
-            }
+        // This function will now log the details of the saved loci
+        this.state.savedSelections.forEach((lociList, index) => {
+            // console.log(`Saved Selection ${index + 1}:`);
+            lociList.forEach((loci, lociIndex) => {
+                // if (loci.kind !== 'empty-loci') {
+                //     console.log(`Loci ${lociIndex + 1}:`, loci);
+                // } else {
+                //     console.log(`Loci ${lociIndex + 1}: Empty`);
+                // }
+            });
         });
     };
+
+
+    handleLoad = (index: number): void => {
+        const savedLociList = this.state.savedSelections[index];
+        if (!savedLociList) {
+            console.error('No saved loci found at index', index);
+            return;
+        }
+
+        // this.plugin.managers.structure.selection.clear();
+
+        // Apply each saved loci using the selectOnly method
+        savedLociList.forEach((loci) => {
+            if (loci.kind !== 'empty-loci') {
+                this.plugin.managers.interactivity.lociSelects.select({ loci, repr: undefined }, true);
+            } else {
+                console.error('Empty loci found in saved selections');
+            }
+        });
+
+        // console.log(`Loaded saved selection ${index + 1}`);
+        this.plugin.managers.structure.selection.events.changed.complete();
+        this.forceUpdate();
+    };
+
 
     handleChangeButtonName = (index: number) => {
         return () => {
@@ -276,40 +315,6 @@ export class StructureSelectionActionsControls extends PluginUIComponent<{}, Str
         };
     };
 
-    handleLoad(index: number): void {
-        const savedSelections = this.state.savedSelections[index];
-        if (!savedSelections) {
-            console.error('No saved selection found at index', index);
-            return;
-        }
-
-        // Deselect any current selection
-        this.plugin.managers.structure.selection.clear();
-        this.plugin.managers.structure.selection.dispose();
-        this.plugin.managers.structure.hierarchy.dispose();
-
-
-        // Apply each saved selection
-        savedSelections.forEach(structureRef => {
-            const structure = structureRef.cell.obj?.data;
-            if (structure) {
-                // Retrieve the loci for the structure
-                const loci = this.plugin.managers.structure.selection.getLoci(structure);
-                if (loci.kind !== 'empty-loci') {
-                    // Use the 'add' modifier to add the loci to the current selection
-                    this.plugin.managers.structure.selection.modify('set', loci);
-                } else {
-                    console.error('No selection found for structure', structure);
-                }
-            }
-        });
-
-        // Trigger an update to ensure the selection is reflected in the UI
-        this.plugin.managers.structure.selection.events.changed.complete();
-        this.forceUpdate();
-
-        console.log(`***Loaded saved selection ${index + 1}`);
-    }
 
 
 
