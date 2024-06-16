@@ -27,6 +27,7 @@ import { ParameterControls, ParamOnChange, PureSelectControl } from '../controls
 import { HelpGroup, HelpText, ViewportHelpContent } from '../viewport/help';
 import { AddComponentControls } from './components';
 import { Loci } from '../../mol-model/loci';
+import { OrderedSet } from '../../mol-data/int/ordered-set';
 
 export class ToggleSelectionModeButton extends PurePluginUIComponent<{ inline?: boolean }> {
     componentDidMount() {
@@ -57,12 +58,13 @@ interface StructureSelectionActionsControlsState {
     isEmpty: boolean,
     isBusy: boolean,
     canUndo: boolean,
+    isExporting: boolean,
 
     action?: StructureSelectionModifier | 'theme' | 'add-component' | 'help' | 'load',
     helper?: SelectionHelperType,
     savedSelections: Loci[][];
     buttonNames: string[];
-
+    exportError: string | null;
 }
 
 const ActionHeader = new Map<StructureSelectionModifier, string>([
@@ -80,9 +82,11 @@ export class StructureSelectionActionsControls extends PluginUIComponent<{}, Str
         isEmpty: true,
         isBusy: false,
         canUndo: false,
+        isExporting: false,
 
         savedSelections: [] as Loci[][],
         buttonNames: [] as string[],
+        exportError: null as string | null,
     };
 
     componentDidMount() {
@@ -240,11 +244,11 @@ export class StructureSelectionActionsControls extends PluginUIComponent<{}, Str
             if (selection) {
                 savedLociList.push(selection);
             }
-            // const structure = s.cell.obj?.data;
-            // if (structure) {
-            //     const loci = this.plugin.managers.structure.selection.getLoci(structure);
-            //      console.log(`Loci for structure ${structure.label}:`, loci);
-            // }
+            const structure = s.cell.obj?.data;
+            if (structure) {
+                const loci = this.plugin.managers.structure.selection.getLoci(structure);
+                console.log(`Loci for structure ${structure.label}:`, loci);
+            }
         }
         if (elementCount === 0) return;
         this.setState(prevState => {
@@ -302,6 +306,85 @@ export class StructureSelectionActionsControls extends PluginUIComponent<{}, Str
     };
 
 
+
+    exportGroup = (index: number) => {
+        return async () => {
+            const savedLociList = this.state.savedSelections[index];
+            if (!savedLociList) {
+                console.error('No saved loci found at index', index);
+                return;
+            }
+
+            try {
+                const optimizedData = savedLociList
+                    .map(this.extractEssentialData)
+                    .filter(data => data !== null); // Filter out nulls if any
+
+                const jsonString = this.serializeInChunks(optimizedData);
+
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `saved_selection_${index + 1}.json`;
+                document.body.appendChild(a);
+                a.click();
+                URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            } catch (error) {
+                console.error('Error during export:', error);
+            }
+        };
+    };
+
+    extractEssentialData(loci: Loci): any {
+        if (loci.kind === 'element-loci') {
+            return {
+                elements: loci.elements.map(e => ({
+                    unit: e.unit.id,
+                    indices: OrderedSet.toArray(e.indices),
+                    chainId: e.unit.chainGroupId,
+                    axes: e.unit.principalAxes,
+                    traits: e.unit.traits
+                }))
+            };
+        }
+        return null; // or handle other cases if necessary
+    }
+
+
+    serializeInChunks(data: any[], chunkSize = 1000): string {
+        const chunks = [];
+        for (let i = 0; i < data.length; i += chunkSize) {
+            chunks.push(data.slice(i, i + chunkSize));
+        }
+
+        let result = '[';
+        let isFirstChunk = true;
+
+        for (const chunk of chunks) {
+            if (!isFirstChunk) {
+                result += ',';
+            }
+            result += JSON.stringify(chunk, null, 2);
+            isFirstChunk = false;
+        }
+
+        result += ']';
+
+        return result;
+    }
+
+
+
+
+
+
+
+
+
+
+
     handleChangeButtonName = (index: number) => {
         return () => {
             const newName = prompt('Enter the new name for the button:', this.state.buttonNames[index]);
@@ -314,6 +397,19 @@ export class StructureSelectionActionsControls extends PluginUIComponent<{}, Str
             }
         };
     };
+
+    deleteGroup = (index: number) => {
+        return () => {
+            this.setState(prevState => {
+                const newButtonNames = [...prevState.buttonNames];
+                newButtonNames.splice(index, 1);
+                const newSavedSelections = [...prevState.savedSelections];
+                newSavedSelections.splice(index, 1);
+                return { buttonNames: newButtonNames, savedSelections: newSavedSelections };
+            });
+        };
+    };
+
 
 
 
@@ -332,7 +428,10 @@ export class StructureSelectionActionsControls extends PluginUIComponent<{}, Str
                 <div key={index} style={{ display: 'flex', alignItems: 'center' }}>
                     {/* Use the name from the buttonNames array instead of the hardcoded `Save ${index + 1}` */}
                     <Button onClick={() => this.handleLoad(index)}>{this.state.buttonNames[index]}</Button>
-                    <IconButton svg={SaveOutlinedSvg} title='Change name of group' onClick={this.handleChangeButtonName(index)} disabled={this.isDisabled} style={{ marginLeft: '5px' }} />
+                    <IconButton svg={SubtractSvg} title='Change name of group' onClick={this.handleChangeButtonName(index)} disabled={this.isDisabled} style={{ marginLeft: '0px' }} />
+                    <IconButton svg={RemoveSvg} title='Delete group' onClick={this.deleteGroup(index)} disabled={this.isDisabled} style={{ marginLeft: '0px' }} />
+                    <IconButton svg={SaveOutlinedSvg} title='Export group' onClick={this.exportGroup(index)} disabled={this.isDisabled} style={{ marginLeft: '0px' }} />
+
                 </div>
             ));
         } else if (this.state.action && !this.state.helper) {
