@@ -18,7 +18,7 @@ const DefaultColor = Color(0xCCCCCC);
 const Description = 'Gives every model (frame) a unique color based on the index in its trajectory.';
 
 export const TrajectoryIndexColorThemeParams = {
-    ...getPaletteParams({ type: 'colors', colorList: 'purples' }),
+    ...getPaletteParams({ type: 'colors', colorList: 'molstar-fuchsias' }),
 };
 export type TrajectoryIndexColorThemeParams = typeof TrajectoryIndexColorThemeParams
 export function getTrajectoryIndexColorThemeParams(ctx: ThemeDataContext) {

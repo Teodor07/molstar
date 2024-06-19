@@ -1,9 +1,3 @@
-/**
- * Copyright (c) 2021 mol* contributors, licensed under MIT, See LICENSE file for more info.
- *
- * @author Alexander Rose <alexander.rose@weirdbyte.de>
- */
-
 export const accumulate_frag = `
 precision highp float;
 
@@ -24,7 +18,12 @@ void main() {
     if (dist > p) discard;
 
     float f = p - dist;
-    gl_FragColor = vColor * f;
+    vec4 color = vColor * f;
+
+    // Apply gamma correction
+    color.rgb = pow(color.rgb, vec3(1.0 / 2.2));
+
+    gl_FragColor = color;
     gl_FragData[1] = vec4(f);
 }
 `;

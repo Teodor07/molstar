@@ -32,7 +32,7 @@ function clusterMemberKey(asymId: string, operList: string[]) {
 }
 
 export const AssemblySymmetryClusterColorThemeParams = {
-    ...getPaletteParams({ colorList: 'red-yellow-blue' }),
+    ...getPaletteParams({ colorList: 'molstar-fuchsia-blueishBlack-lightskyblue' }),
 };
 export type AssemblySymmetryClusterColorThemeParams = typeof AssemblySymmetryClusterColorThemeParams
 export function getAssemblySymmetryClusterColorThemeParams(ctx: ThemeDataContext) {

@@ -33,9 +33,9 @@ varying vec4 vPosition;
 // TODO: add as general pp option to remove banding?
 // Iestyn's RGB dither from http://alex.vlachos.com/graphics/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf
 vec3 ScreenSpaceDither(vec2 vScreenPos) {
-    vec3 vDither = vec3(dot(vec2(171.0, 231.0), vScreenPos.xy));
-    vDither.rgb = fract(vDither.rgb / vec3(103.0, 71.0, 97.0));
-    return vDither.rgb / 255.0;
+    vec3 vDither = vec3(dot(vec2(171.0, 231.0), vScreenPos.xy + g_flTime));
+    vDither.rgb = fract(vDither.rgb / vec3(103.0, 71.0, 97.0)) - vec3(0.5, 0.5, 0.5);
+    return (vDither.rgb / 255.0) * 0.375;
 }
 
 vec3 saturateColor(vec3 c, float amount) {
@@ -50,6 +50,8 @@ vec3 lightenColor(vec3 c, float amount) {
 }
 
 void main() {
+    vec3 dither = ScreenSpaceDither(gl_FragCoord.xy);
+
     #if defined(dVariant_skybox)
         vec4 t = uViewDirectionProjectionInverse * vPosition;
         #ifdef enabledShaderTextureLod
@@ -58,7 +60,7 @@ void main() {
             gl_FragColor = textureCube(tSkybox, uRotation * normalize(t.xyz / t.w));
         #endif
         gl_FragColor.a = uOpacity;
-        gl_FragColor.rgb = lightenColor(saturateColor(gl_FragColor.rgb, uSaturation), uLightness);
+        gl_FragColor.rgb = lightenColor(saturateColor(gl_FragColor.rgb, uSaturation), uLightness) + dither;
     #elif defined(dVariant_image)
         vec2 coords;
         if (uViewportAdjusted) {
@@ -72,7 +74,7 @@ void main() {
             gl_FragColor = texture2D(tImage, vec2(coords.x, 1.0 - coords.y));
         #endif
         gl_FragColor.a = uOpacity;
-        gl_FragColor.rgb = lightenColor(saturateColor(gl_FragColor.rgb, uSaturation), uLightness);
+        gl_FragColor.rgb = lightenColor(saturateColor(gl_FragColor.rgb, uSaturation), uLightness) + dither;
     #elif defined(dVariant_horizontalGradient)
         float d;
         if (uViewportAdjusted) {
@@ -81,7 +83,7 @@ void main() {
             d = (gl_FragCoord.y / uTexSize.y) + 1.0 - (uGradientRatio * 2.0);
         }
         gl_FragColor = vec4(mix(uGradientColorB, uGradientColorA, clamp(d, 0.0, 1.0)), 1.0);
-        gl_FragColor.rgb += ScreenSpaceDither(gl_FragCoord.xy);
+        gl_FragColor.rgb += dither;
     #elif defined(dVariant_radialGradient)
         float d;
         if (uViewportAdjusted) {
@@ -90,7 +92,7 @@ void main() {
             d = distance(vec2(0.5), gl_FragCoord.xy / uTexSize) + uGradientRatio - 0.5;
         }
         gl_FragColor = vec4(mix(uGradientColorB, uGradientColorA, 1.0 - clamp(d, 0.0, 1.0)), 1.0);
-        gl_FragColor.rgb += ScreenSpaceDither(gl_FragCoord.xy);
+        gl_FragColor.rgb += dither;
     #endif
 }
 `;

@@ -14,6 +14,34 @@ export const ColorLists = {
      * Copyright (c) 2002 Cynthia Brewer, Mark Harrower, and The Pennsylvania State University.
      * Licensed under the Apache License, Version 2.0 (the "License");
      */
+    'molstar-fuchsia-blueishBlack': ColorList('Fuchsia-BlueishBlack', 'sequential',
+        'Fuchsia to BlueishBlack, sequential color scheme',
+        [0xee82ee, 0xda70d6, 0xba55d3, 0x9932cc, 0x8a2be2, 0x800080]
+    ),
+    'molstar-blueishBlack-fuchsia': ColorList('BlueishBlack-Fuchsia', 'sequential',
+        'BlueishBlack to Fuchsia, sequential color scheme',
+        [0x000000, 0x1a1a1a, 0x333333, 0x4d4d4d, 0x666666, 0x808080]
+    ),
+    'molstar-fuchsias': ColorList('Fuchsias', 'sequential',
+        'Sequential Fuchsias color scheme',
+        [0xee82ee, 0xda70d6, 0xba55d3, 0x9932cc, 0x8a2be2, 0x800080]
+    ),
+    'molstar-blueishBlack': ColorList('BlueishBlack', 'sequential',
+        'Sequential BlueishBlack color scheme',
+        [0x000000, 0x1a1a1a, 0x333333, 0x4d4d4d, 0x666666, 0x808080]
+    ),
+    'molstar-fuchsia-blueishBlack-lightskyblue': ColorList('Fuchsia-BlueishBlack-LightSkyBlue', 'diverging',
+        'Fuchsia to BlueishBlack to LightSkyBlue, diverging color scheme',
+        [0xee82ee, 0xda70d6, 0xba55d3, 0x9932cc, 0x8a2be2, 0x800080, 0x87cefa, 0x87ceeb, 0x00bfff]
+    ),
+    'molstar-blueishBlack-lightskyblue': ColorList('BlueishBlack-LightSkyBlue', 'diverging',
+        'BlueishBlack to LightSkyBlue, diverging color scheme',
+        [0x000000, 0x1a1a1a, 0x333333, 0x4d4d4d, 0x666666, 0x808080, 0x87cefa, 0x87ceeb, 0x00bfff]
+    ),
+    'molstar-fuchsia-lightskyblue': ColorList('Fuchsia-LightSkyBlue', 'diverging',
+        'Fuchsia to LightSkyBlue, diverging color scheme',
+        [0xee82ee, 0xda70d6, 0xba55d3, 0x9932cc, 0x8a2be2, 0x800080, 0x87cefa, 0x87ceeb, 0x00bfff]
+    ),
     'orange-red': ColorList('Orange-Red', 'sequential',
         'Orange-Red, sequential color scheme from ColorBrewer 2.0',
         [0xfff7ec, 0xfee8c8, 0xfdd49e, 0xfdbb84, 0xfc8d59, 0xef6548, 0xd7301f, 0xb30000, 0x7f0000]

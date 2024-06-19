@@ -16,7 +16,7 @@ type PaletteType = 'generate' | 'colors'
 
 const DefaultGetPaletteProps = {
     type: 'generate' as PaletteType,
-    colorList: 'red-yellow-blue' as ColorListName
+    colorList: 'molstar-fuchsia-blueishBlack-lightskyblue' as ColorListName
 };
 type GetPaletteProps = typeof DefaultGetPaletteProps
 
