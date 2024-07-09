@@ -25,13 +25,14 @@ import { Sphere3D } from '../../mol-math/geometry';
 import { PostprocessingProps } from './postprocessing';
 
 export const DofParams = {
-    blurSize: PD.Numeric(9, { min: 1, max: 32, step: 1 }),
-    blurSpread: PD.Numeric(1.0, { min: 0.0, max: 10.0, step: 0.1 }),
+    blurSize: PD.Numeric(8, { min: 1, max: 32, step: 1 }), // Increased for more quality
+    blurSpread: PD.Numeric(2.0, { min: 0.0, max: 10.0, step: 0.1 }), // Increased for smoother transition
     inFocus: PD.Numeric(0.0, { min: -5000.0, max: 5000.0, step: 1.0 }, { description: 'Distance from the scene center that will be in focus' }),
-    PPM: PD.Numeric(20.0, { min: 0.0, max: 5000.0, step: 0.1 }, { description: 'Size of the area that will be in focus' }),
+    PPM: PD.Numeric(2500.0, { min: 0.0, max: 5000.0, step: 0.1 }, { description: 'Size of the area that will be in focus' }), // Reduced for more precise focus
     center: PD.Select('camera-target', PD.arrayToOptions(['scene-center', 'camera-target'])),
     mode: PD.Select('plane', PD.arrayToOptions(['plane', 'sphere'])),
 };
+
 
 export type DofProps = PD.Values<typeof DofParams>
 
