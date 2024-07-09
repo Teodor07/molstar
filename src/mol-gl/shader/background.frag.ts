@@ -30,8 +30,6 @@ uniform vec4 uViewport;
 uniform bool uViewportAdjusted;
 varying vec4 vPosition;
 
-// TODO: add as general pp option to remove banding?
-// Iestyn's RGB dither from http://alex.vlachos.com/graphics/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf
 vec3 ScreenSpaceDither(vec2 vScreenPos) {
     vec3 vDither = vec3(dot(vec2(171.0, 231.0), vScreenPos.xy + g_flTime));
     vDither.rgb = fract(vDither.rgb / vec3(103.0, 71.0, 97.0)) - vec3(0.5, 0.5, 0.5);

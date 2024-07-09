@@ -116,12 +116,14 @@ export const RendererParams = {
         azimuth: PD.Numeric(320, { min: 0, max: 360, step: 1 }),
         color: PD.Color(Color.fromNormalizedRgb(1.0, 1.0, 1.0)),
         intensity: PD.Numeric(0.6, { min: 0.0, max: 5.0, step: 0.01 }),
-    }, o => Color.toHexString(o.color), { defaultValue: [{
-        inclination: 150,
-        azimuth: 320,
-        color: Color.fromNormalizedRgb(1.0, 1.0, 1.0),
-        intensity: 0.6
-    }] }),
+    }, o => Color.toHexString(o.color), {
+        defaultValue: [{
+            inclination: 150,
+            azimuth: 320,
+            color: Color.fromNormalizedRgb(1.0, 1.0, 1.0),
+            intensity: 0.6
+        }]
+    }),
     ambientColor: PD.Color(Color.fromNormalizedRgb(1.0, 1.0, 1.0)),
     ambientIntensity: PD.Numeric(0.4, { min: 0.0, max: 2.0, step: 0.01 }),
 };
@@ -268,27 +270,28 @@ namespace Renderer {
             if (r.state.disposed || !r.state.visible || (!r.state.pickable && variant === 'pick')) {
                 return;
             }
-
-            // TODO: check what happens if sphere surrounds frustum fully
+            // TODO: Look more into what happens when the sphere surrounds frustum fully
+            // Check if the bounding sphere intersects the frustum
             if (!Frustum3D.intersectsSphere3D(frustum, r.values.boundingSphere.ref.value)) {
                 return;
             }
 
-            const [minDistance, maxDistance] = r.values.uLod.ref.value;
-            if (minDistance !== 0 || maxDistance !== 0) {
-                const { center, radius } = r.values.boundingSphere.ref.value;
-                const d = Plane3D.distanceToPoint(cameraPlane, center);
-                if (d + radius < minDistance) return;
-                if (d - radius > maxDistance) return;
-            }
-
-            const hasInstanceGrid = r.values.instanceGrid.ref.value.cellSize > 1;
-            if (hasInstanceGrid || (hasInstanceGrid && r.values.lodLevels)) {
+            // Perform hierarchical culling (example using a simple grid)
+            if (r.values.instanceGrid.ref.value.cellSize > 1) {
                 r.cull(cameraPlane, frustum, isOccluded, ctx.stats);
             } else {
                 r.uncull();
             }
 
+            // Update LOD based on distance
+            const [minDistance, maxDistance] = r.values.uLod.ref.value;
+            if (minDistance !== 0 || maxDistance !== 0) {
+                const { center, radius } = r.values.boundingSphere.ref.value;
+                const d = Plane3D.distanceToPoint(cameraPlane, center);
+                if (d + radius < minDistance || d - radius > maxDistance) return;
+            }
+
+            // Update uniforms if necessary
             let needUpdate = false;
             if (r.values.dLightCount.ref.value !== light.count) {
                 ValueCell.update(r.values.dLightCount, light.count);
@@ -300,76 +303,52 @@ namespace Renderer {
             }
             if (needUpdate) r.update();
 
+            // Bind the appropriate program
             const program = r.getProgram(variant);
             if (state.currentProgramId !== program.id) {
-                // console.log('new program')
                 globalUniformsNeedUpdate = true;
                 program.use();
             }
 
+            // Update global uniforms if needed
             if (globalUniformsNeedUpdate) {
-                // console.log('globalUniformsNeedUpdate')
                 program.setUniforms(globalUniformList);
                 program.bindTextures(sharedTexturesList, 0);
                 globalUniformsNeedUpdate = false;
             }
 
+            // Set WebGL state based on geometry type and flag
             if (r.values.dGeometryType.ref.value === 'directVolume') {
-                if (variant !== 'color') {
-                    return; // only color supported
-                }
-
-                // culling done in fragment shader
+                if (variant !== 'color') return;
                 state.disable(gl.CULL_FACE);
                 state.frontFace(gl.CCW);
-
                 if (flag === Flag.BlendedVolume) {
-                    // depth test done manually in shader against `depthTexture`
                     state.disable(gl.DEPTH_TEST);
                     state.depthMask(false);
                 }
-            } else if (flag === Flag.BlendedFront) {
-                state.enable(gl.CULL_FACE);
-                if (r.values.dFlipSided?.ref.value) {
-                    state.frontFace(gl.CW);
-                    state.cullFace(gl.FRONT);
-                } else {
-                    state.frontFace(gl.CCW);
-                    state.cullFace(gl.BACK);
-                }
-            } else if (flag === Flag.BlendedBack) {
-                state.enable(gl.CULL_FACE);
-                if (r.values.dFlipSided?.ref.value) {
-                    state.frontFace(gl.CW);
-                    state.cullFace(gl.BACK);
-                } else {
-                    state.frontFace(gl.CCW);
-                    state.cullFace(gl.FRONT);
-                }
             } else {
-                if (r.values.uDoubleSided) {
-                    if (r.values.uDoubleSided.ref.value || r.values.hasReflection.ref.value) {
+                state.enable(gl.CULL_FACE);
+                if (flag === Flag.BlendedFront) {
+                    state.frontFace(r.values.dFlipSided?.ref.value ? gl.CW : gl.CCW);
+                    state.cullFace(r.values.dFlipSided?.ref.value ? gl.FRONT : gl.BACK);
+                } else if (flag === Flag.BlendedBack) {
+                    state.frontFace(r.values.dFlipSided?.ref.value ? gl.CW : gl.CCW);
+                    state.cullFace(r.values.dFlipSided?.ref.value ? gl.BACK : gl.FRONT);
+                } else {
+                    if (r.values.uDoubleSided?.ref.value || r.values.hasReflection?.ref.value) {
                         state.disable(gl.CULL_FACE);
                     } else {
                         state.enable(gl.CULL_FACE);
                     }
-                } else {
-                    // webgl default
-                    state.disable(gl.CULL_FACE);
-                }
-
-                if (r.values.dFlipSided?.ref.value) {
-                    state.frontFace(gl.CW);
-                    state.cullFace(gl.FRONT);
-                } else {
-                    // webgl default
-                    state.frontFace(gl.CCW);
-                    state.cullFace(gl.BACK);
+                    state.frontFace(r.values.dFlipSided?.ref.value ? gl.CW : gl.CCW);
+                    state.cullFace(r.values.dFlipSided?.ref.value ? gl.FRONT : gl.BACK);
                 }
             }
 
+            // Render the object
             r.render(variant, sharedTexturesList.length);
         };
+
 
         const update = (camera: ICamera, scene: Scene) => {
             ValueCell.update(globalUniforms.uView, camera.view);

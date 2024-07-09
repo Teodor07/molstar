@@ -56,9 +56,9 @@ export const Canvas3DParams = {
         fov: PD.Numeric(45, { min: 10, max: 130, step: 1 }, { label: 'Field of View' }),
         manualReset: PD.Boolean(false, { isHidden: true }),
     }, { pivot: 'mode' }),
-    cameraFog: PD.MappedStatic('on', {
+    cameraFog: PD.MappedStatic('off', {
         on: PD.Group({
-            intensity: PD.Numeric(15, { min: 1, max: 100, step: 1 }),
+            intensity: PD.Numeric(75, { min: 1, max: 100, step: 1 }),
         }),
         off: PD.Group({})
     }, { cycle: true, description: 'Show fog in the distance' }),

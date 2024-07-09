@@ -74,15 +74,15 @@ const ImageParams = {
 type ImageProps = PD.Values<typeof ImageParams>
 
 const HorizontalGradientParams = {
-    topColor: PD.Color(Color(0xDDDDDD)),
-    bottomColor: PD.Color(Color(0xEEEEEE)),
+    topColor: PD.Color(Color(0x202020)),
+    bottomColor: PD.Color(Color(0x202020)),
     ratio: PD.Numeric(0.5, { min: 0.0, max: 1.0, step: 0.01 }),
     coverage: PD.Select('viewport', PD.arrayToOptions(['viewport', 'canvas'])),
 };
 
 const RadialGradientParams = {
-    centerColor: PD.Color(Color(0xDDDDDD)),
-    edgeColor: PD.Color(Color(0xEEEEEE)),
+    centerColor: PD.Color(Color(0x202020)),
+    edgeColor: PD.Color(Color(0x202020)),
     ratio: PD.Numeric(0.5, { min: 0.0, max: 1.0, step: 0.01 }),
     coverage: PD.Select('viewport', PD.arrayToOptions(['viewport', 'canvas'])),
 };
