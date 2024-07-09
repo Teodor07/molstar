@@ -19,7 +19,7 @@
         line-height: $row-height;
         display: block;
         width: $control-label-width + $control-spacing;
-        text-align: right;
+        text-align: left;
         padding: 0 $control-spacing;
         color: color-lower-contrast($font-color, 15%);
         overflow: hidden;
@@ -41,11 +41,10 @@
 
     > div.msp-control-row-ctrl {
         position: absolute;
-        left: $control-label-width + $control-spacing;
+        left: calc(($control-label-width + $control-spacing)*3/4);
         top: 0;
         right: 0;
         bottom: 0;
-        width: max-content;
     }
 
     > div {
