@@ -24,12 +24,14 @@ uniform float uFar;
     uniform vec3 uLightColor[dLightCount];
 #endif
 
+
 uniform mat4 uProjection;
 uniform mat4 uInvProjection;
-
 uniform float uMaxDistance;
 uniform float uTolerance;
 uniform float uBias;
+uniform float uSamplingPattern;
+
 
 bool isBackground(const in float depth) {
     return depth == 1.0;
@@ -61,20 +63,37 @@ float screenFade(const in vec2 coords) {
     return saturate(1.0 - dot(fade, fade));
 }
 
+float random(const in vec2 co) {
+    return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
+vec3 getRayStep(const in vec3 rayDir, const in float stepLength, const in int stepIndex) {
+    if (uSamplingPattern == 1.0) { // Poisson Disk
+        float angle = float(stepIndex) * 2.39996323; // 2.39996323 = golden angle
+        float radius = sqrt(float(stepIndex) / float(dSteps));
+        vec2 offset = vec2(cos(angle), sin(angle)) * radius * stepLength * 9.86; // Increased radius scaling factor
+        return rayDir * stepLength + vec3(offset, 0.0) * 0.2; // Increased offset scaling factor
+    } else if (uSamplingPattern == 2.0) { // Jittered
+        vec3 jitter = vec3(random(vec2(float(stepIndex), 0.0)), random(vec2(float(stepIndex), 1.0)), 0.0) - 0.5;
+        return rayDir * stepLength + jitter * stepLength * 0.3; // Increased jitter scaling factor
+    } else { // Uniform
+        return rayDir * stepLength;
+    }
+}
+
 // based on https://panoskarabelas.com/posts/screen_space_shadows/
 float screenSpaceShadow(const in vec3 position, const in vec3 lightDirection, const in float stepLength) {
     // Ray position and direction (in view-space)
     vec3 rayPos = position;
     vec3 rayDir = -lightDirection;
-
-    // Compute ray step
-    vec3 rayStep = rayDir * stepLength;
+    //vec3 rayStep = rayDir * stepLength;
 
     // Ray march towards the light
     float occlusion = 0.0;
     vec4 rayCoords = vec4(0.0);
     for (int i = 0; i < dSteps; ++i) {
         // Step the ray
+        vec3 rayStep = getRayStep(rayDir, stepLength, i);
         rayPos += rayStep;
 
         rayCoords = uProjection * vec4(rayPos, 1.0);

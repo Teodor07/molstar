@@ -79,6 +79,12 @@ export function getOutlinesRenderable(ctx: WebGLContext, depthTextureOpaque: Tex
     return createComputeRenderable(renderItem, values);
 }
 
+const SamplingPattern = {
+    uniform: 0,
+    poisson: 1,
+    jittered: 2
+};
+
 const ShadowsSchema = {
     ...QuadSchema,
     tDepth: TextureSpec('texture', 'rgba', 'ubyte', 'nearest'),
@@ -96,6 +102,7 @@ const ShadowsSchema = {
     uMaxDistance: UniformSpec('f'),
     uTolerance: UniformSpec('f'),
     uBias: UniformSpec('f'),
+    uSamplingPattern: UniformSpec('f'), // uniform, poisson, jittered
 
     uLightDirection: UniformSpec('v3[]'),
     uLightColor: UniformSpec('v3[]'),
@@ -124,6 +131,7 @@ function getShadowsRenderable(ctx: WebGLContext, depthTexture: Texture): Shadows
         uMaxDistance: ValueCell.create(3.0),
         uTolerance: ValueCell.create(1.0),
         uBias: ValueCell.create(0.6),
+        uSamplingPattern: ValueCell.create(SamplingPattern['uniform']),
 
         uLightDirection: ValueCell.create([]),
         uLightColor: ValueCell.create([]),
@@ -354,8 +362,8 @@ function getPostprocessingRenderable(ctx: WebGLContext, colorTexture: Texture, d
 export const PostprocessingParams = {
     occlusion: PD.MappedStatic('on', {
         on: PD.Group({
-            samples: PD.Numeric(32, { min: 1, max: 256, step: 1 }),
-            multiScale: PD.MappedStatic('off', {
+            samples: PD.Numeric(64, { min: 1, max: 256, step: 1 }),
+            multiScale: PD.MappedStatic('on', {
                 on: PD.Group({
                     levels: PD.ObjectList({
                         radius: PD.Numeric(5, { min: 0, max: 20, step: 0.1 }, { description: 'Final occlusion radius is 2^x' }),
@@ -366,38 +374,39 @@ export const PostprocessingParams = {
                         { radius: 8, bias: 1 },
                         { radius: 11, bias: 1 },
                     ] }),
-                    nearThreshold: PD.Numeric(10, { min: 0, max: 50, step: 1 }),
-                    farThreshold: PD.Numeric(1500, { min: 0, max: 10000, step: 100 }),
+                    nearThreshold: PD.Numeric(20, { min: 0, max: 50, step: 1 }),
+                    farThreshold: PD.Numeric(1750, { min: 0, max: 10000, step: 100 }),
                 }),
                 off: PD.Group({})
             }, { cycle: true }),
             radius: PD.Numeric(5, { min: 0, max: 20, step: 0.1 }, { description: 'Final occlusion radius is 2^x', hideIf: p => p?.multiScale.name === 'on' }),
-            bias: PD.Numeric(0.8, { min: 0, max: 3, step: 0.1 }),
+            bias: PD.Numeric(1.2, { min: 0, max: 3, step: 0.1 }),
             blurKernelSize: PD.Numeric(15, { min: 1, max: 25, step: 2 }),
             resolutionScale: PD.Numeric(1, { min: 0.1, max: 1, step: 0.05 }, { description: 'Adjust resolution of occlusion calculation' }),
             color: PD.Color(Color(0x000000)),
         }),
         off: PD.Group({})
     }, { cycle: true, description: 'Darken occluded crevices with the ambient occlusion effect' }),
-    shadow: PD.MappedStatic('off', {
+    shadow: PD.MappedStatic('on', {
         on: PD.Group({
-            steps: PD.Numeric(1, { min: 1, max: 64, step: 1 }),
-            bias: PD.Numeric(0.6, { min: 0.0, max: 1.0, step: 0.01 }),
-            maxDistance: PD.Numeric(3, { min: 0, max: 256, step: 1 }),
+            steps: PD.Numeric(32, { min: 1, max: 64, step: 1 }),
+            bias: PD.Numeric(0.33, { min: 0.0, max: 1.0, step: 0.01 }),
+            maxDistance: PD.Numeric(150, { min: 0, max: 256, step: 1 }),
             tolerance: PD.Numeric(1.0, { min: 0.0, max: 10.0, step: 0.1 }),
+            samplingPattern: PD.Select('uniform', [['uniform', 'Uniform'], ['poisson', 'Poisson Disk'], ['jittered', 'Jittered']] as const),
         }),
         off: PD.Group({})
     }, { cycle: true, description: 'Simplistic shadows' }),
-    outline: PD.MappedStatic('off', {
+    outline: PD.MappedStatic('on', {
         on: PD.Group({
             scale: PD.Numeric(1, { min: 1, max: 5, step: 1 }),
-            threshold: PD.Numeric(0.33, { min: 0.01, max: 1, step: 0.01 }),
+            threshold: PD.Numeric(0.05, { min: 0.01, max: 1, step: 0.01 }),
             color: PD.Color(Color(0x000000)),
             includeTransparent: PD.Boolean(true, { description: 'Whether to show outline for transparent objects' }),
         }),
         off: PD.Group({})
     }, { cycle: true, description: 'Draw outline around 3D objects' }),
-    dof: PD.MappedStatic('off', {
+    dof: PD.MappedStatic('on', {
         on: PD.Group(DofParams),
         off: PD.Group({})
     }, { cycle: true, description: 'DOF' }),
@@ -406,7 +415,7 @@ export const PostprocessingParams = {
         smaa: PD.Group(SmaaParams),
         off: PD.Group({})
     }, { options: [['fxaa', 'FXAA'], ['smaa', 'SMAA'], ['off', 'Off']], description: 'Smooth pixel edges' }),
-    sharpening: PD.MappedStatic('off', {
+    sharpening: PD.MappedStatic('on', {
         on: PD.Group(CasParams),
         off: PD.Group({})
     }, { cycle: true, description: 'Contrast Adaptive Sharpening' }),
@@ -416,6 +425,7 @@ export const PostprocessingParams = {
         off: PD.Group({})
     }, { cycle: true, description: 'Bloom' }),
 };
+
 
 export type PostprocessingProps = PD.Values<typeof PostprocessingParams>
 
@@ -606,6 +616,7 @@ export class PostprocessingPass {
         }
     }
 
+
     updateState(camera: ICamera, transparentBackground: boolean, backgroundColor: Color, props: PostprocessingProps, light: Light) {
         let needsUpdateShadows = false;
         let needsUpdateMain = false;
@@ -762,6 +773,8 @@ export class PostprocessingPass {
             ValueCell.updateIfChanged(this.shadowsRenderable.values.uMaxDistance, props.shadow.params.maxDistance);
             ValueCell.updateIfChanged(this.shadowsRenderable.values.uTolerance, props.shadow.params.tolerance);
             ValueCell.updateIfChanged(this.shadowsRenderable.values.uBias, props.shadow.params.bias);
+            const samplingPatternValue = SamplingPattern[props.shadow.params.samplingPattern];
+            ValueCell.updateIfChanged(this.shadowsRenderable.values.uSamplingPattern, samplingPatternValue);
             if (this.shadowsRenderable.values.dSteps.ref.value !== props.shadow.params.steps) {
                 ValueCell.update(this.shadowsRenderable.values.dSteps, props.shadow.params.steps);
                 needsUpdateShadows = true;

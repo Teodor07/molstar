@@ -88,6 +88,7 @@ function adjustPluginProps(ctx: PluginContext) {
                     maxDistance: 80,
                     steps: 3,
                     tolerance: 1.0,
+                    samplingPattern: 'uniform'
                 }
             },
             outline: {

@@ -47,8 +47,14 @@ const Canvas3DPresets = {
                     }
                 },
                 shadow: {
-                    name: 'off',
-                    params: {}
+                    name: 'on',
+                    params: {
+                        steps: 32, // Number of steps in the shadow map algorithm
+                        bias: 0.33, // Bias to prevent shadow acne
+                        maxDistance: 150, // Maximum distance up to which shadows are visible
+                        tolerance: 1, // Tolerance for shadow edges to prevent aliasing
+                        samplingPattern: 'uniform'
+                    }
                 },
             },
             renderer: {
@@ -92,7 +98,16 @@ const Canvas3DPresets = {
             postprocessing: {
                 occlusion: { name: 'off', params: {} },
                 outline: { name: 'off', params: {} },
-                shadow: { name: 'off', params: {} },
+                shadow: {
+                    name: 'on',
+                    params: {
+                        steps: 16, // Number of steps in the shadow map algorithm
+                        bias: 0.005, // Bias to prevent shadow acne
+                        maxDistance: 50, // Maximum distance up to which shadows are visible
+                        tolerance: 0.1, // Tolerance for shadow edges to prevent aliasing
+                        samplingPattern: 'uniform'
+                    }
+                },
             },
             renderer: {
                 ambientIntensity: 0.4,
